@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-noto-serif), Georgia, serif;
+  --font-sans: var(--font-open-sans), system-ui, sans-serif;
+  --color-navy: #24305e;
+  --color-navy-dark: #1b2449;
+  --color-sky: #3b9bc4;
+  --color-gold: #c5ad7c;
+  --animate-fade-up: fade-up 1s ease-out both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
