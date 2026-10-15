@@ -1,19 +1,23 @@
+import AccommodationInfo from "@/components/AccommodationInfo";
 import BookAccommodation from "@/components/BookAccommodation";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import Rooms from "@/components/Rooms";
-import Welcome from "@/components/Welcome";
+import KeyFigures from "@/components/KeyFigures";
+import PageHero from "@/components/PageHero";
+import VisitorNav from "@/components/VisitorNav";
 
 export default function Home() {
   return (
-    <main className="relative">
+    <>
       <Header />
-      <Hero />
-      <Welcome />
-      <BookAccommodation />
-      <Rooms />
+      <main className="flex-1">
+        <PageHero />
+        <VisitorNav />
+        <AccommodationInfo />
+        <BookAccommodation />
+        <KeyFigures />
+      </main>
       <Footer />
-    </main>
+    </>
   );
 }

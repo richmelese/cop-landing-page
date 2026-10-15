@@ -1,16 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --font-serif: var(--font-noto-serif), Georgia, serif;
-  --font-sans: var(--font-open-sans), system-ui, sans-serif;
-  --color-navy: #24305e;
-  --color-navy-dark: #1b2449;
-  --color-sky: #3b9bc4;
-  --color-gold: #c5ad7c;
-  --animate-fade-up: fade-up 1s ease-out both;
+  --font-display: "Outfit Variable", system-ui, sans-serif;
+  --font-sans: "Inter Tight Variable", system-ui, sans-serif;
+
+  --color-cop-navy: #003e6f;
+  --color-cop-navy-dark: #002c50;
+  --color-cop-navy-light: #2c4772;
+  --color-cop-blue: #1c75bc;
+  --color-cop-blue-soft: #c3d1e2;
+  --color-cop-green: #00784c;
+  --color-cop-green-dark: #005c3a;
+  --color-cop-mint: #43b97d;
+  --color-cop-ink: #1d2b3a;
+  --color-cop-mist: #f3f6fa;
+
+  --animate-fade-up: fade-up 0.9s ease-out both;
+  --animate-ken-burns: ken-burns 24s ease-in-out infinite alternate;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-shimmer: shimmer 6s linear infinite;
+  --animate-scroll-dot: scroll-dot 1.8s ease-in-out infinite;
 
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(30px); }
+    from { opacity: 0; transform: translateY(24px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ken-burns {
+    from { transform: scale(1.05) translate(0, 0); }
+    to { transform: scale(1.18) translate(-2%, -2%); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes shimmer {
+    from { background-position: 0% 50%; }
+    to { background-position: 200% 50%; }
+  }
+  @keyframes scroll-dot {
+    0% { opacity: 0; transform: translateY(0); }
+    40% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(14px); }
   }
 }
