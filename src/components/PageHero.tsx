@@ -1,6 +1,8 @@
 import Image from "next/image";
-import { ArrowUpRight, CalendarDays, ChevronRight, House, MapPin, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, CalendarDays, ChevronRight, House, MapPin, QrCode, ShieldCheck } from "lucide-react";
 import addisNight from "../../public/images/addis-night.jpg";
+import qrCode from "../../public/images/superapp-qr.png";
 
 const BOOKING_URL = "https://catering.cop32ethiopia.et/hotels";
 
@@ -32,9 +34,9 @@ export default function PageHero() {
         <nav aria-label="Breadcrumb" className="animate-fade-up">
           <ol className="inline-flex flex-wrap items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[14px] text-white/80 backdrop-blur-md">
             <li>
-              <a href="#" className="flex items-center gap-1.5 transition hover:text-white">
+              <Link href="/" className="flex items-center gap-1.5 transition hover:text-white">
                 <House className="h-3.5 w-3.5" /> Home
-              </a>
+              </Link>
             </li>
             <ChevronRight className="h-3.5 w-3.5" />
             <li>
@@ -96,6 +98,17 @@ export default function PageHero() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="absolute top-1/2 right-8 hidden w-[220px] -translate-y-1/2 animate-fade-up rounded-3xl border border-white/15 bg-white/10 p-5 text-center backdrop-blur-xl [animation-delay:500ms] lg:block">
+        <p className="flex items-center justify-center gap-1.5 font-display text-[14px] font-semibold text-white">
+          <QrCode className="h-3.5 w-3.5 text-cop-mint" /> Use Our Service
+        </p>
+        <p className="mt-1 text-[12.5px] text-white/70">All COP32 services, in one app</p>
+        <div className="mx-auto mt-4 w-full max-w-[140px] overflow-hidden rounded-2xl bg-white p-2">
+          <Image src={qrCode} alt="Scan to use the COP32 SuperApp" className="h-auto w-full" />
+        </div>
+        <p className="mt-3 text-[12px] text-white/60">Scan for the COP32 SuperApp</p>
       </div>
 
       <a

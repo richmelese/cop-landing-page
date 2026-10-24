@@ -4,15 +4,17 @@ import "@fontsource-variable/outfit";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Accommodation | COP32 Ethiopia",
-  description:
-    "Official hotels, recommended areas and the official accommodation booking platform for COP32 in Addis Ababa.",
+  title: {
+    template: "%s",
+    default: "COP32 Ethiopia",
+  },
+  description: "COP32, the 32nd UN Climate Change Conference, hosted by Ethiopia in Addis Ababa in 2027.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full scroll-smooth antialiased">
-      <body className="flex min-h-full flex-col bg-white font-sans text-cop-ink">{children}</body>
+    <html lang="en" className="h-full scroll-smooth antialiased" suppressHydrationWarning>
+      <body className="flex min-h-full flex-col overflow-x-hidden bg-white font-sans text-cop-ink">{children}</body>
     </html>
   );
 }

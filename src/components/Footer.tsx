@@ -1,21 +1,20 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import addisView from "../../public/images/addis-view.jpg";
 import Logo from "./Logo";
 
 const quickLinks = [
-  "Become a Partner",
-  "Volunteer Programme",
-  "Green Zone Application",
-  "Register to Visit",
-  "COP32 Action Agenda",
-  "Green Zone",
-  "Media Library",
-  "Brand Assets",
-  "Blue Zone",
-  "Climate Cooperation",
-  "FAQ",
-  "Contact",
+  { label: "Become a Partner", href: "/partners/partnerships" },
+  { label: "Volunteer Programme", href: "/#volunteer" },
+  { label: "Accommodation", href: "/accommodation" },
+  { label: "Register to Visit", href: "/visitor/accreditation" },
+  { label: "COP32 Action Agenda", href: "/vision/action-agenda" },
+  { label: "Media Library", href: "/media/library" },
+  { label: "Brand Assets", href: "/media/brand-assets" },
+  { label: "Climate Cooperation", href: "/vision/climate-cooperation" },
+  { label: "FAQ", href: "/visitor/faq" },
+  { label: "Contact", href: "/contact" },
 ];
 
 const officialLinks = [
@@ -94,9 +93,9 @@ export default function Footer() {
 
       <div className="mx-auto grid max-w-[1320px] gap-12 px-5 py-16 lg:grid-cols-[1.2fr_2fr_1fr] lg:px-8">
         <div>
-          <a href="#" className="inline-block text-white">
+          <Link href="/" className="inline-block text-white">
             <Logo />
-          </a>
+          </Link>
           <p className="mt-6 max-w-[300px] text-[15px] leading-relaxed">
             The 32nd UN Climate Change Conference, hosted by Ethiopia in Addis Ababa.
           </p>
@@ -105,11 +104,11 @@ export default function Footer() {
         <div>
           <h3 className="font-display text-[18px] font-semibold text-white">Quick Links</h3>
           <ul className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-[15px] sm:grid-cols-3">
-            {quickLinks.map((link) => (
-              <li key={link}>
-                <a href="#" className="transition hover:text-cop-mint">
-                  {link}
-                </a>
+            {quickLinks.map(({ label, href }) => (
+              <li key={label}>
+                <Link href={href} className="transition hover:text-cop-mint">
+                  {label}
+                </Link>
               </li>
             ))}
           </ul>
