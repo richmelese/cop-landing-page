@@ -1,9 +1,11 @@
 "use client";
 
-import { ChevronDown, Menu, UserRound, X } from "lucide-react";
+import { ChevronDown, Menu, QrCode, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
+import qrCode from "../../public/images/superapp-qr.png";
 
 type NavSub = { label: string; href: string };
 type NavGroup = { label: string; items: NavSub[]; href?: undefined };
@@ -120,13 +122,24 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <a
-            href="#"
-            className="hidden items-center gap-2 whitespace-nowrap rounded-full bg-cop-green px-5 py-2.5 font-display text-[14px] font-semibold text-white transition hover:bg-cop-mint sm:flex"
-          >
-            <UserRound className="h-4 w-4" />
-            Register / Sign In
-          </a>
+          <div className="group relative hidden sm:block">
+            <a
+              href="#"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full bg-cop-green px-5 py-2.5 font-display text-[14px] font-semibold text-white transition hover:bg-cop-mint"
+            >
+              <QrCode className="h-4 w-4" />
+              Register / Sign In
+            </a>
+            <div className="invisible absolute top-full right-0 pt-3 opacity-0 transition-all duration-300 group-hover:visible group-hover:opacity-100">
+              <div className="w-[190px] translate-y-2 rounded-2xl bg-white p-4 text-center shadow-xl shadow-cop-navy-dark/15 transition-transform duration-300 group-hover:translate-y-0">
+                <div className="mx-auto h-[130px] w-[130px] overflow-hidden rounded-xl border border-cop-blue-soft/60 p-1.5">
+                  <Image src={qrCode} alt="Scan to register for COP32" className="h-full w-full object-contain" />
+                </div>
+                <p className="mt-3 font-display text-[13px] font-semibold text-cop-navy">Scan to Register</p>
+                <p className="mt-0.5 text-[11.5px] text-cop-ink/60">& use every COP32 service</p>
+              </div>
+            </div>
+          </div>
           <button className="grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-white/30 font-display text-[13px] font-semibold text-white transition hover:bg-white/10">
             AM
           </button>

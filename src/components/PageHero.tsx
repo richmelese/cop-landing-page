@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarDays, ChevronRight, House, MapPin, QrCode, ShieldCheck } from "lucide-react";
 import addisNight from "../../public/images/addis-night.jpg";
 import qrCode from "../../public/images/superapp-qr.png";
+import AdeyAbebaStrip from "./AdeyAbebaStrip";
 
 const BOOKING_URL = "https://catering.cop32ethiopia.et/hotels";
 
@@ -14,7 +15,8 @@ const chips = [
 
 export default function PageHero() {
   return (
-    <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-cop-navy-dark pt-20 md:min-h-[760px] lg:min-h-[88vh]">
+    <>
+      <section className="relative flex min-h-[100svh] items-end overflow-hidden bg-cop-navy-dark pt-20 md:min-h-[760px] lg:min-h-[88vh]">
       <Image
         src={addisNight}
         alt="Addis Ababa skyline at night"
@@ -118,6 +120,9 @@ export default function PageHero() {
       >
         <span className="h-2 w-1 animate-scroll-dot rounded-full bg-white" />
       </a>
-    </section>
+      </section>
+
+      <AdeyAbebaStrip />
+    </>
   );
 }

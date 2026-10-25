@@ -6,12 +6,17 @@ import {
   GraduationCap,
   Globe2,
   HeartHandshake,
+  Hotel,
   Landmark,
   Megaphone,
+  Plane,
+  Radio,
   Recycle,
   Scale,
+  ShieldCheck,
   Sprout,
   Target,
+  Truck,
   Wind,
   Zap,
 } from "lucide-react";
@@ -697,11 +702,47 @@ export const detailPages: Record<string, DetailPageContent> = {
         body: [
           "Organisations can support COP32 through a tiered sponsorship programme, with visibility across the Green Zone, digital platforms, and official conference materials.",
         ],
+        sponsorCta: {
+          title: "Sponsor COP32",
+          subtitle: "Align your brand with climate action; apply to support COP32 Addis Ababa.",
+          buttonLabel: "Become a Sponsor",
+          href: "/contact",
+        },
         subsections: [
           { title: "Platinum", body: "Top-tier visibility across the Green Zone and all official materials." },
           { title: "Gold", body: "Prominent Green Zone presence and digital platform visibility." },
           { title: "Silver", body: "Green Zone exhibition space and programme recognition." },
           { title: "Supporting Partner", body: "Recognition across COP32 communications." },
+        ],
+      },
+      {
+        heading: "Our Sponsors",
+        body: [
+          "No sponsors have been confirmed yet — the slots below show the categories open under each tier as the Presidency's sponsorship programme launches.",
+        ],
+        sponsorTiers: [
+          {
+            tier: "Platinum Partners",
+            slots: [
+              { category: "National Banking Partner", icon: Landmark },
+              { category: "National Telecommunications Partner", icon: Radio },
+            ],
+          },
+          {
+            tier: "Gold Partners",
+            slots: [
+              { category: "National Airline Partner", icon: Plane },
+              { category: "Energy Partner", icon: Zap },
+              { category: "Insurance Partner", icon: ShieldCheck },
+            ],
+          },
+          {
+            tier: "Silver Partners",
+            slots: [
+              { category: "Hospitality Partner", icon: Hotel },
+              { category: "Logistics Partner", icon: Truck },
+            ],
+          },
         ],
       },
     ],

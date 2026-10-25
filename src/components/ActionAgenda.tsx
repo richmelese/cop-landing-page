@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,7 +37,7 @@ const themes = [
   { icon: HeartPulse, title: "Resilient Health Systems", body: "Climate-resilient, low-carbon health care." },
 ];
 
-const VISIBLE = 2; // cards shown on each side of center
+const VISIBLE = 3; // cards shown on each side of center
 
 function wrap(i: number, length: number) {
   return ((i % length) + length) % length;
@@ -45,12 +45,35 @@ function wrap(i: number, length: number) {
 
 export default function ActionAgenda() {
   const [active, setActive] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const dragState = useRef<{ startX: number; dragging: boolean; moved: boolean } | null>(null);
   const n = themes.length;
 
   const slots = [];
   for (let offset = -VISIBLE; offset <= VISIBLE; offset++) {
     slots.push({ offset, index: wrap(active + offset, n) });
   }
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragState.current = { startX: e.clientX, dragging: true, moved: false };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragState.current?.dragging) return;
+    const delta = e.clientX - dragState.current.startX;
+    if (Math.abs(delta) > 4) dragState.current.moved = true;
+    setDragX(delta);
+  };
+
+  const endDrag = () => {
+    if (!dragState.current) return;
+    const threshold = 60;
+    if (dragX > threshold) setActive((i) => wrap(i - 1, n));
+    else if (dragX < -threshold) setActive((i) => wrap(i + 1, n));
+    dragState.current = null;
+    setDragX(0);
+  };
 
   return (
     <section className="bg-cop-mist py-20 lg:py-28">
@@ -73,32 +96,39 @@ export default function ActionAgenda() {
         </div>
 
         <div
-          className="relative mt-10 h-[370px] overflow-hidden md:h-[390px]"
-          style={{ perspective: "1600px" }}
+          className="relative mt-10 h-[370px] touch-pan-y overflow-hidden select-none md:h-[390px]"
+          style={{ perspective: "1600px", cursor: dragState.current?.dragging ? "grabbing" : "grab" }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
         >
           {slots.map(({ offset, index }) => {
             const { icon: Icon, title, body } = themes[index];
             const abs = Math.abs(offset);
-            const scale = 1 - abs * 0.16;
-            const translateX = offset * 180;
-            const rotateY = offset * -22;
-            const opacity = abs > VISIBLE ? 0 : 1 - abs * 0.3;
+            const dragInfluence = dragX / 190;
+            const scale = 1 - abs * 0.14;
+            const translateX = offset * 190 + dragX * 0.4;
+            const rotateY = (offset - dragInfluence * 0.3) * -18;
+            const opacity = abs > VISIBLE ? 0 : 1 - abs * 0.22;
             const z = VISIBLE - abs;
 
             return (
               <Link
                 key={`${index}-${offset}`}
                 href="/vision/action-agenda"
+                draggable={false}
                 onClick={(e) => {
-                  if (offset !== 0) {
+                  if (offset !== 0 || dragState.current?.moved) {
                     e.preventDefault();
-                    setActive(index);
+                    if (offset !== 0) setActive(index);
                   }
                 }}
                 style={{
                   transform: `translate(-50%, -50%) translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
                   opacity,
                   zIndex: z,
+                  transition: dragState.current?.dragging ? "none" : undefined,
                 }}
                 className="group absolute top-1/2 left-1/2 flex aspect-[3/4] w-[260px] flex-col justify-end overflow-hidden rounded-3xl shadow-2xl shadow-cop-navy-dark/30 ring-4 ring-white transition-all duration-500 ease-out"
               >

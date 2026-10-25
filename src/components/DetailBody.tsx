@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowUpRight, ChevronDown, CircleCheck, Info, QrCode, User, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, Building2, ChevronDown, CircleCheck, Info, QrCode, User, type LucideIcon } from "lucide-react";
 import qrCode from "../../public/images/superapp-qr.png";
 import DetailImageCollage from "./DetailImageCollage";
 import Weather from "./Weather";
@@ -14,6 +14,9 @@ export type FaqItem = { q: string; a: string };
 export type Cta = { label: string; href: string };
 export type BoardSeat = { role: string; status?: string };
 export type BoardGroup = { title: string; description?: string; seats: BoardSeat[] };
+export type SponsorSlot = { category: string; icon?: LucideIcon };
+export type SponsorTier = { tier: string; slots: SponsorSlot[] };
+export type SponsorCta = { title: string; subtitle: string; buttonLabel: string; href: string };
 export type Section = {
   heading?: string;
   body?: string[];
@@ -27,6 +30,8 @@ export type Section = {
   cta?: Cta;
   qr?: boolean;
   boardGroups?: BoardGroup[];
+  sponsorTiers?: SponsorTier[];
+  sponsorCta?: SponsorCta;
 };
 export type TimelineItem = { year: string; title: string; body: string; icon: LucideIcon; current?: boolean };
 export type Stat = { label: string; value: string };
@@ -70,6 +75,43 @@ export default function DetailBody({
                       {p}
                     </p>
                   ))}
+                </div>
+              )}
+
+              {section.sponsorCta && (
+                <div className="relative mt-6 overflow-hidden rounded-3xl bg-gradient-to-br from-cop-navy to-cop-navy-dark px-8 py-12 text-center md:px-12">
+                  <svg
+                    viewBox="0 0 800 300"
+                    className="pointer-events-none absolute inset-0 h-full w-full opacity-20"
+                    preserveAspectRatio="xMidYMid slice"
+                    aria-hidden
+                  >
+                    <path
+                      d="M-50 250 C 150 100, 250 350, 450 180 S 700 50, 850 220"
+                      stroke="#ffffff"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <path
+                      d="M-50 100 C 150 250, 300 20, 500 150 S 750 280, 900 80"
+                      stroke="#43b97d"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                    <circle cx="120" cy="60" r="60" fill="#ffffff" fillOpacity="0.06" />
+                    <circle cx="680" cy="240" r="90" fill="#43b97d" fillOpacity="0.08" />
+                  </svg>
+
+                  <div className="relative">
+                    <h3 className="font-display text-3xl font-bold text-white md:text-4xl">{section.sponsorCta.title}</h3>
+                    <p className="mx-auto mt-3 max-w-[480px] text-[15px] text-white/80">{section.sponsorCta.subtitle}</p>
+                    <a
+                      href={section.sponsorCta.href}
+                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-cop-mint px-7 py-3 font-display text-[15px] font-bold text-cop-navy-dark shadow-lg transition hover:-translate-y-0.5"
+                    >
+                      {section.sponsorCta.buttonLabel}
+                    </a>
+                  </div>
                 </div>
               )}
 
@@ -149,6 +191,38 @@ export default function DetailBody({
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {section.sponsorTiers && (
+                <div className="mt-6 space-y-8">
+                  {section.sponsorTiers.map((tier) => (
+                    <div key={tier.tier}>
+                      <p className="font-display text-[12px] font-bold tracking-[0.18em] text-cop-green uppercase">
+                        {tier.tier}
+                      </p>
+                      <div className="mt-3 border-t border-cop-blue-soft/50" />
+                      <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {tier.slots.map((slot) => {
+                          const Icon = slot.icon ?? Building2;
+                          return (
+                            <div
+                              key={slot.category}
+                              className="rounded-2xl border border-cop-blue-soft/60 bg-white p-6 text-center"
+                            >
+                              <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-cop-mist text-cop-navy">
+                                <Icon className="h-6 w-6" />
+                              </span>
+                              <p className="mt-4 font-display text-[15px] font-semibold text-cop-navy">
+                                {slot.category}
+                              </p>
+                              <p className="mt-1 text-[13px] text-cop-ink/55 italic">Partner slot open</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

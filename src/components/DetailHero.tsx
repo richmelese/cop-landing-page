@@ -4,6 +4,7 @@ import { ChevronRight, House } from "lucide-react";
 import addisNight from "../../public/images/addis-night.jpg";
 import addisSunset from "../../public/images/addis-sunset.jpg";
 import addisView from "../../public/images/addis-view.jpg";
+import AdeyAbebaStrip from "./AdeyAbebaStrip";
 
 const images = { night: addisNight, sunset: addisSunset, view: addisView };
 
@@ -48,6 +49,8 @@ export default function DetailHero({
           </p>
         </div>
       </section>
+
+      <AdeyAbebaStrip />
 
       <div className="border-b border-cop-blue-soft/50 bg-white">
         <nav aria-label="Breadcrumb" className="mx-auto w-full max-w-[1320px] px-5 py-3.5 lg:px-8">

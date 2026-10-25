@@ -8,7 +8,7 @@ import addisNight from "../../public/images/addis-night.jpg";
 import addisSunset from "../../public/images/addis-sunset.jpg";
 import addisView from "../../public/images/addis-view.jpg";
 import qrCode from "../../public/images/superapp-qr.png";
-import adeyAbebaPattern from "../../public/images/adey-abeba-pattern.png";
+import AdeyAbebaStrip from "./AdeyAbebaStrip";
 
 const slides = [
   {
@@ -117,19 +117,7 @@ export default function HomeHero() {
         </div>
       </div>
 
-      <div className="relative h-11 w-full shadow-[0_2px_6px_rgba(0,0,0,0.15)] md:h-14">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${adeyAbebaPattern.src})`,
-            backgroundRepeat: "repeat",
-            backgroundSize: "56px 56px",
-            backgroundPosition: "center",
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-cop-mint via-[#f2c230] to-cop-mint" />
-        <div className="absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-cop-mint via-[#f2c230] to-cop-mint" />
-      </div>
+      <AdeyAbebaStrip />
     </section>
   );
 }
