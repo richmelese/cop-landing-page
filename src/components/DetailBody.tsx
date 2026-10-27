@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { ArrowUpRight, Building2, ChevronDown, CircleCheck, Info, QrCode, User, type LucideIcon } from "lucide-react";
+import { assetUrl } from "@/lib/api";
 import qrCode from "../../public/images/superapp-qr.png";
 import DetailImageCollage from "./DetailImageCollage";
 import Weather from "./Weather";
@@ -14,9 +15,27 @@ export type FaqItem = { q: string; a: string };
 export type Cta = { label: string; href: string };
 export type BoardSeat = { role: string; status?: string };
 export type BoardGroup = { title: string; description?: string; seats: BoardSeat[] };
-export type SponsorSlot = { category: string; icon?: LucideIcon };
+export type SponsorSlot = { category: string; icon?: LucideIcon; logo?: string };
 export type SponsorTier = { tier: string; slots: SponsorSlot[] };
 export type SponsorCta = { title: string; subtitle: string; buttonLabel: string; href: string };
+export type VenueMapMarkerColor = "blue" | "green" | "purple" | "amber" | "navy";
+export type VenueMapMarker = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  color: VenueMapMarkerColor;
+};
+export type VenueMap = { image: string; markers: VenueMapMarker[] };
+
+const venueMarkerColor: Record<VenueMapMarkerColor, string> = {
+  blue: "bg-cop-blue",
+  green: "bg-cop-green",
+  purple: "bg-purple-500",
+  amber: "bg-amber-500",
+  navy: "bg-cop-navy",
+};
+
 export type Section = {
   heading?: string;
   body?: string[];
@@ -32,6 +51,7 @@ export type Section = {
   boardGroups?: BoardGroup[];
   sponsorTiers?: SponsorTier[];
   sponsorCta?: SponsorCta;
+  venueMap?: VenueMap;
 };
 export type TimelineItem = { year: string; title: string; body: string; icon: LucideIcon; current?: boolean };
 export type Stat = { label: string; value: string };
@@ -75,6 +95,44 @@ export default function DetailBody({
                       {p}
                     </p>
                   ))}
+                </div>
+              )}
+
+              {section.venueMap && (
+                <div className="mt-6">
+                  <div className="relative aspect-[3/2] w-full overflow-hidden rounded-3xl border border-cop-blue-soft/60 bg-cop-mist">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={assetUrl(section.venueMap.image)}
+                      alt="Venue site map"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    {section.venueMap.markers.map((marker, j) => (
+                      <div
+                        key={j}
+                        className="absolute -translate-x-1/2 -translate-y-1/2"
+                        style={{ left: `${marker.x}%`, top: `${marker.y}%` }}
+                      >
+                        <span
+                          className={`grid h-8 w-8 place-items-center rounded-full font-display text-[13px] font-bold text-white shadow-lg ring-2 ring-white ${venueMarkerColor[marker.color]}`}
+                        >
+                          {marker.id}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3">
+                    {section.venueMap.markers.map((marker, j) => (
+                      <div key={j} className="flex items-center gap-2">
+                        <span
+                          className={`grid h-6 w-6 shrink-0 place-items-center rounded-full font-display text-[11px] font-bold text-white ${venueMarkerColor[marker.color]}`}
+                        >
+                          {marker.id}
+                        </span>
+                        <span className="text-[13.5px] font-medium text-cop-ink/75">{marker.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -213,13 +271,20 @@ export default function DetailBody({
                               key={slot.category}
                               className="rounded-2xl border border-cop-blue-soft/60 bg-white p-6 text-center"
                             >
-                              <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-cop-mist text-cop-navy">
-                                <Icon className="h-6 w-6" />
-                              </span>
+                              {slot.logo ? (
+                                <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-white ring-1 ring-cop-blue-soft/40">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={assetUrl(slot.logo)} alt={slot.category} className="h-full w-full object-contain p-1.5" />
+                                </span>
+                              ) : (
+                                <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-cop-mist text-cop-navy">
+                                  <Icon className="h-6 w-6" />
+                                </span>
+                              )}
                               <p className="mt-4 font-display text-[15px] font-semibold text-cop-navy">
                                 {slot.category}
                               </p>
-                              <p className="mt-1 text-[13px] text-cop-ink/55 italic">Partner slot open</p>
+                              {!slot.logo && <p className="mt-1 text-[13px] text-cop-ink/55 italic">Partner slot open</p>}
                             </div>
                           );
                         })}
@@ -244,24 +309,42 @@ export default function DetailBody({
               )}
 
               {section.targets && (
-                <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {section.targets.map(({ icon: Icon, value, title, body }) => (
-                    <div
-                      key={title}
-                      className="rounded-3xl border border-cop-blue-soft/60 bg-white p-6 text-center"
-                    >
-                      <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-cop-mint to-cop-blue text-white">
-                        <Icon className="h-6 w-6" />
-                      </span>
-                      {value && <p className="mt-4 font-display text-3xl font-bold text-cop-navy">{value}</p>}
-                      <p
-                        className={`font-display text-[15px] font-semibold text-cop-navy ${value ? "mt-1" : "mt-4"}`}
-                      >
-                        {title}
-                      </p>
-                      <p className="mt-2 text-[13.5px] leading-snug text-cop-ink/70">{body}</p>
-                    </div>
-                  ))}
+                <div className="relative mt-8 overflow-hidden rounded-3xl bg-cop-mist/70 p-6 md:p-10">
+                  <svg
+                    className="pointer-events-none absolute -top-10 -left-16 hidden opacity-90 md:block"
+                    width="260"
+                    height="260"
+                    viewBox="0 0 260 260"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <circle cx="130" cy="130" r="124" stroke="#c3d2e6" strokeWidth="1" />
+                    <circle cx="130" cy="130" r="88" stroke="#c3d2e6" strokeWidth="1" />
+                    <path
+                      d="M58 78c6-30 62-44 92-22 24 18 12 44-14 42-21-1-25 16-47 12-23-4-35-8-31-32Z"
+                      fill="#2457c9"
+                    />
+                    <path d="M74 168c17-3 20-21 32-32" stroke="#1f9d6c" strokeWidth="9" strokeLinecap="round" />
+                    <ellipse cx="108" cy="135" rx="11" ry="8" fill="#1f9d6c" transform="rotate(-35 108 135)" />
+                    <circle cx="172" cy="100" r="7" fill="#2457c9" />
+                    <circle cx="86" cy="192" r="9" fill="#2457c9" />
+                  </svg>
+
+                  <div className="relative grid gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
+                    {section.targets.map(({ icon, title }) => {
+                      const Icon = icon ?? Building2;
+                      return (
+                        <div key={title} className="flex flex-col items-center text-center">
+                          <span className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-full border border-cop-blue-soft/70 bg-white text-cop-navy shadow-sm">
+                            <Icon className="h-7 w-7" strokeWidth={1.6} />
+                          </span>
+                          <p className="mt-3 max-w-[130px] text-[13.5px] leading-snug font-semibold text-cop-navy">
+                            {title}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 

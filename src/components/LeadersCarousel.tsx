@@ -3,55 +3,39 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Quote, User } from "lucide-react";
+import { assetUrl, getLeaders, type Leader, type LeaderColor } from "@/lib/api";
 import watermark from "../../public/images/cop-watermark.png";
 
-// TODO: replace roles, names and quotes once the COP32 leadership team is formally announced.
-const leaders = [
-  {
-    initials: "CP",
-    tag: "Presidency",
-    name: "COP32 President-Designate",
-    role: "COP32 Presidency",
-    quote:
-      "COP32 is a meeting point for dialogue, consensus, and implementation-focused action — for Ethiopia, for Africa, and for the world.",
-    from: "from-cop-navy",
-    to: "to-cop-blue",
-  },
-  {
-    initials: "EA",
-    tag: "Government",
-    name: "Minister of Planning and Development",
-    role: "Federal Democratic Republic of Ethiopia",
-    quote:
-      "Climate resilience and economic development must move together. Addis Ababa gives us the platform to show how.",
-    from: "from-cop-green",
-    to: "to-cop-mint",
-  },
-  {
-    initials: "AA",
-    tag: "Host City",
-    name: "Mayor of Addis Ababa",
-    role: "Addis Ababa City Administration",
-    quote:
-      "Hosting COP32 is a chance to show what an African city can deliver when the world comes to the table.",
-    from: "from-cop-blue",
-    to: "to-cop-green",
-  },
-];
+const gradients: Record<LeaderColor, { from: string; to: string }> = {
+  navy: { from: "from-cop-navy", to: "to-cop-blue" },
+  green: { from: "from-cop-green", to: "to-cop-mint" },
+  blue: { from: "from-cop-blue", to: "to-cop-green" },
+};
 
 export default function LeadersCarousel() {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
+    getLeaders()
+      .then(setLeaders)
+      .catch(() => setLeaders([]));
+  }, []);
+
+  useEffect(() => {
+    if (leaders.length < 2) return;
     const id = setInterval(() => {
       setActive((i) => (i + 1) % leaders.length);
     }, 5000);
     return () => clearInterval(id);
-  }, []);
+  }, [leaders.length]);
+
+  if (leaders.length === 0) return null;
 
   const prev = () => setActive((i) => (i - 1 + leaders.length) % leaders.length);
   const next = () => setActive((i) => (i + 1) % leaders.length);
   const current = leaders[active];
+  const { from, to } = gradients[current.color] ?? gradients.navy;
 
   return (
     <section className="relative overflow-hidden bg-cop-mist">
@@ -69,9 +53,13 @@ export default function LeadersCarousel() {
         <div className="relative mt-10 grid gap-10 lg:grid-cols-[220px_1fr] lg:items-center lg:gap-16">
           <div className="relative mx-auto h-[220px] w-[220px] shrink-0 lg:mx-0">
             <div
-              className={`grid h-full w-full place-items-center rounded-[2rem] bg-gradient-to-br ${current.from} ${current.to} font-display text-5xl font-bold text-white shadow-xl shadow-cop-navy/20 ring-8 ring-white transition-colors duration-700`}
+              className={`grid h-full w-full place-items-center overflow-hidden rounded-[2rem] bg-gradient-to-br ${from} ${to} font-display text-5xl font-bold text-white shadow-xl shadow-cop-navy/20 ring-8 ring-white transition-colors duration-700`}
             >
-              <User className="h-20 w-20 text-white/90" strokeWidth={1.5} />
+              {current.image ? (
+                <img src={assetUrl(current.image)} alt={current.name} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-20 w-20 text-white/90" strokeWidth={1.5} />
+              )}
             </div>
             <span className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rounded-full bg-white px-5 py-1.5 font-display text-[12px] font-semibold text-cop-navy shadow-md ring-1 ring-cop-blue-soft/60">
               {current.tag}
@@ -109,19 +97,26 @@ export default function LeadersCarousel() {
               </div>
 
               <div className="flex -space-x-2">
-                {leaders.map((leader, i) => (
-                  <button
-                    key={leader.name}
-                    type="button"
-                    onClick={() => setActive(i)}
-                    aria-label={`Show quote from ${leader.name}`}
-                    className={`grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br ${leader.from} ${leader.to} text-white ring-2 transition-all ${
-                      i === active ? "z-10 scale-110 ring-cop-green" : "ring-white"
-                    }`}
-                  >
-                    <User className="h-4 w-4" strokeWidth={1.5} />
-                  </button>
-                ))}
+                {leaders.map((leader, i) => {
+                  const g = gradients[leader.color] ?? gradients.navy;
+                  return (
+                    <button
+                      key={leader.id}
+                      type="button"
+                      onClick={() => setActive(i)}
+                      aria-label={`Show quote from ${leader.name}`}
+                      className={`grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-gradient-to-br ${g.from} ${g.to} text-white ring-2 transition-all ${
+                        i === active ? "z-10 scale-110 ring-cop-green" : "ring-white"
+                      }`}
+                    >
+                      {leader.image ? (
+                        <img src={assetUrl(leader.image)} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <User className="h-4 w-4" strokeWidth={1.5} />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

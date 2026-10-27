@@ -5,16 +5,29 @@ import DetailHero from "@/components/DetailHero";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import VisitorNav from "@/components/VisitorNav";
-import { detailPages } from "@/content/detailPages";
+import { ApiError, getPage as fetchPage, getPages } from "@/lib/api";
+import { hydrateIcons } from "@/lib/iconMap";
+import type { DetailPageContent } from "@/content/detailPages";
 
 export const instant = false;
 
-export function generateStaticParams() {
-  return Object.keys(detailPages).map((key) => ({ slug: key.split("/") }));
+export async function generateStaticParams() {
+  try {
+    const pages = await getPages();
+    return pages.map((p) => ({ slug: p.slug.split("/") }));
+  } catch {
+    return [];
+  }
 }
 
-function getPage(slug: string[]) {
-  return detailPages[slug.join("/")];
+async function getPage(slug: string[]): Promise<DetailPageContent | null> {
+  try {
+    const page = await fetchPage(slug.join("/"));
+    return hydrateIcons(page) as DetailPageContent;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
 
 export async function generateMetadata({
@@ -22,13 +35,13 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string[] }>;
 }): Promise<Metadata> {
-  const page = getPage((await params).slug);
+  const page = await getPage((await params).slug);
   if (!page) return {};
   return { title: `${page.title} | COP32 Ethiopia`, description: page.summary };
 }
 
 export default async function DetailPage({ params }: { params: Promise<{ slug: string[] }> }) {
-  const page = getPage((await params).slug);
+  const page = await getPage((await params).slug);
   if (!page) notFound();
 
   return (
