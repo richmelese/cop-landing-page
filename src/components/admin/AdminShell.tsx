@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useState } from "react";
 import {
-  Building2,
   FileText,
   HelpCircle,
   LayoutDashboard,
@@ -20,7 +19,6 @@ const nav = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Pages", href: "/admin/pages", icon: FileText },
   { label: "News", href: "/admin/news", icon: Newspaper },
-  { label: "Sponsors", href: "/admin/sponsors", icon: Building2 },
   { label: "FAQ", href: "/admin/faq", icon: HelpCircle },
   { label: "Leaders", href: "/admin/leaders", icon: Users },
 ];

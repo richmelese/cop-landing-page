@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   Building2,
   Factory,
   FileCheck2,
@@ -12,17 +13,20 @@ import {
   Plane,
   Radio,
   Recycle,
+  Rocket,
   Scale,
   ShieldCheck,
   Sprout,
   Target,
   Truck,
+  Users,
   Wind,
   Zap,
   type LucideIcon,
 } from "lucide-react";
 
-const iconMap: Record<string, LucideIcon> = {
+export const iconMap: Record<string, LucideIcon> = {
+  Briefcase,
   Building2,
   Factory,
   FileCheck2,
@@ -36,11 +40,13 @@ const iconMap: Record<string, LucideIcon> = {
   Plane,
   Radio,
   Recycle,
+  Rocket,
   Scale,
   ShieldCheck,
   Sprout,
   Target,
   Truck,
+  Users,
   Wind,
   Zap,
 };

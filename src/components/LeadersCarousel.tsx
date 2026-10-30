@@ -18,7 +18,7 @@ export default function LeadersCarousel() {
 
   useEffect(() => {
     getLeaders()
-      .then(setLeaders)
+      .then((data) => setLeaders(Array.isArray(data) ? data : []))
       .catch(() => setLeaders([]));
   }, []);
 

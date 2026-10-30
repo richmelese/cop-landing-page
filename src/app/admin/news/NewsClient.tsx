@@ -1,22 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
-import { createNews, deleteNews, getNews, updateNews, type NewsPost } from "@/lib/api";
+import { Newspaper, Pencil, Plus, Trash2, X } from "lucide-react";
+import { createNews, deleteNews, getNews, getNewsPaged, updateNews, type NewsPost } from "@/lib/api";
+import EmptyState from "@/components/admin/EmptyState";
+import FilterSelect from "@/components/admin/FilterSelect";
+import ListSkeleton from "@/components/admin/ListSkeleton";
+import Pagination from "@/components/admin/Pagination";
+import SearchInput from "@/components/admin/SearchInput";
 
 const empty = { category: "", date: "", title: "", excerpt: "" };
+const LIMIT = 8;
 
 export default function NewsClient() {
   const [items, setItems] = useState<NewsPost[]>([]);
+  const [meta, setMeta] = useState({ page: 1, limit: LIMIT, total: 0, totalPages: 1 });
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Partial<NewsPost> | null>(null);
   const [saving, setSaving] = useState(false);
 
   const load = () => {
-    getNews()
-      .then((data) => {
-        setItems(data);
+    getNewsPaged({ page, limit: LIMIT, search: search || undefined, category: category || undefined })
+      .then(({ items, meta }) => {
+        setItems(items);
+        setMeta(meta);
         setLoading(false);
       })
       .catch(() => {
@@ -25,7 +37,40 @@ export default function NewsClient() {
       });
   };
 
-  useEffect(load, []);
+  useEffect(load, [page, search, category]);
+
+  // Populates the category filter dropdown from every category in use, independent of
+  // the current search/filter/page — otherwise the list of choices would shrink to match
+  // whatever's already filtered in.
+  useEffect(() => {
+    getNews({ limit: 100 })
+      .then((all) => setCategoryOptions([...new Set(all.map((n) => n.category))].sort()))
+      .catch(() => setCategoryOptions([]));
+  }, []);
+
+  const handleSearch = (value: string) => {
+    setLoading(true);
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handleCategory = (value: string) => {
+    setLoading(true);
+    setCategory(value);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setLoading(true);
+    setSearch("");
+    setCategory("");
+    setPage(1);
+  };
+
+  const handlePageChange = (p: number) => {
+    setLoading(true);
+    setPage(p);
+  };
 
   const save = async () => {
     if (!editing) return;
@@ -75,6 +120,20 @@ export default function NewsClient() {
         </button>
       </div>
 
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <SearchInput value={search} onChange={handleSearch} placeholder="Search news…" />
+        <FilterSelect value={category} onChange={handleCategory} options={categoryOptions} placeholder="All categories" />
+        {(search || category) && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-[13px] font-medium text-cop-ink/55 underline-offset-2 transition hover:text-cop-navy hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
       {error && (
         <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-[13.5px] font-medium text-red-700">
           {error}
@@ -82,7 +141,7 @@ export default function NewsClient() {
       )}
 
       <div className="mt-6 space-y-3">
-        {loading && <p className="text-[14px] text-cop-ink/50">Loading…</p>}
+        {loading && <ListSkeleton />}
         {!loading &&
           items.map((item) => (
             <div
@@ -115,8 +174,17 @@ export default function NewsClient() {
               </div>
             </div>
           ))}
-        {!loading && items.length === 0 && <p className="text-[14px] text-cop-ink/50">No news posts yet.</p>}
+        {!loading && items.length === 0 && (
+          <EmptyState
+            icon={Newspaper}
+            message={search || category ? "No news posts match your search/filter." : "No news posts yet."}
+          />
+        )}
       </div>
+
+      {!loading && (
+        <Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} limit={meta.limit} onPageChange={handlePageChange} />
+      )}
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">

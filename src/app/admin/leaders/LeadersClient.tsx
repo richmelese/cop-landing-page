@@ -7,11 +7,18 @@ import {
   createLeader,
   deleteLeader,
   getLeaders,
+  getLeadersPaged,
   updateLeader,
   uploadFile,
   type Leader,
   type LeaderColor,
+  type LeaderDisplayAs,
 } from "@/lib/api";
+import EmptyState from "@/components/admin/EmptyState";
+import FilterSelect from "@/components/admin/FilterSelect";
+import ListSkeleton from "@/components/admin/ListSkeleton";
+import Pagination from "@/components/admin/Pagination";
+import SearchInput from "@/components/admin/SearchInput";
 
 const colorSwatch: Record<LeaderColor, string> = {
   navy: "bg-gradient-to-br from-cop-navy to-cop-blue",
@@ -19,8 +26,16 @@ const colorSwatch: Record<LeaderColor, string> = {
   blue: "bg-gradient-to-br from-cop-blue to-cop-green",
 };
 
+const LIMIT = 8;
+
 export default function LeadersClient() {
   const [items, setItems] = useState<Leader[]>([]);
+  const [meta, setMeta] = useState({ page: 1, limit: LIMIT, total: 0, totalPages: 1 });
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [tag, setTag] = useState("");
+  const [color, setColor] = useState("");
+  const [tagOptions, setTagOptions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Partial<Leader> | null>(null);
@@ -28,9 +43,16 @@ export default function LeadersClient() {
   const [uploading, setUploading] = useState(false);
 
   const load = () => {
-    getLeaders()
-      .then((data) => {
-        setItems(data);
+    getLeadersPaged({
+      page,
+      limit: LIMIT,
+      search: search || undefined,
+      tag: tag || undefined,
+      color: (color || undefined) as LeaderColor | undefined,
+    })
+      .then(({ items, meta }) => {
+        setItems(items);
+        setMeta(meta);
         setLoading(false);
       })
       .catch(() => {
@@ -39,7 +61,46 @@ export default function LeadersClient() {
       });
   };
 
-  useEffect(load, []);
+  useEffect(load, [page, search, tag, color]);
+
+  // Populates the tag filter dropdown from every tag in use, independent of the
+  // current search/filter/page.
+  useEffect(() => {
+    getLeaders({ limit: 100 })
+      .then((all) => setTagOptions([...new Set(all.map((l) => l.tag))].sort()))
+      .catch(() => setTagOptions([]));
+  }, []);
+
+  const handleSearch = (value: string) => {
+    setLoading(true);
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handleTag = (value: string) => {
+    setLoading(true);
+    setTag(value);
+    setPage(1);
+  };
+
+  const handleColor = (value: string) => {
+    setLoading(true);
+    setColor(value);
+    setPage(1);
+  };
+
+  const clearFilters = () => {
+    setLoading(true);
+    setSearch("");
+    setTag("");
+    setColor("");
+    setPage(1);
+  };
+
+  const handlePageChange = (p: number) => {
+    setLoading(true);
+    setPage(p);
+  };
 
   const save = async () => {
     if (!editing) return;
@@ -51,6 +112,7 @@ export default function LeadersClient() {
         role: editing.role ?? "",
         quote: editing.quote ?? "",
         color: (editing.color ?? "navy") as LeaderColor,
+        displayAs: (editing.displayAs ?? "leader") as LeaderDisplayAs,
         image: editing.image ?? undefined,
       };
       if (editing.id) {
@@ -87,11 +149,26 @@ export default function LeadersClient() {
         </div>
         <button
           type="button"
-          onClick={() => setEditing({ tag: "", name: "", role: "", quote: "", color: "navy" })}
+          onClick={() => setEditing({ tag: "", name: "", role: "", quote: "", color: "navy", displayAs: "leader" })}
           className="inline-flex items-center gap-2 rounded-full bg-cop-green px-5 py-2.5 font-display text-[14px] font-semibold text-white transition hover:bg-cop-mint"
         >
           <Plus className="h-4 w-4" /> Add Leader
         </button>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <SearchInput value={search} onChange={handleSearch} placeholder="Search leaders…" />
+        <FilterSelect value={tag} onChange={handleTag} options={tagOptions} placeholder="All tags" />
+        <FilterSelect value={color} onChange={handleColor} options={["navy", "green", "blue"]} placeholder="All colors" />
+        {(search || tag || color) && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-[13px] font-medium text-cop-ink/55 underline-offset-2 transition hover:text-cop-navy hover:underline"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {error && (
@@ -101,7 +178,7 @@ export default function LeadersClient() {
       )}
 
       <div className="mt-6 space-y-3">
-        {loading && <p className="text-[14px] text-cop-ink/50">Loading…</p>}
+        {loading && <ListSkeleton />}
         {!loading &&
           items.map((item) => (
             <div
@@ -122,6 +199,11 @@ export default function LeadersClient() {
                   <span className="inline-block rounded-full bg-cop-mist px-2.5 py-0.5 text-[11px] font-semibold text-cop-navy">
                     {item.tag}
                   </span>
+                  {item.displayAs === "pm" && (
+                    <span className="ml-1.5 inline-block rounded-full bg-cop-green/10 px-2.5 py-0.5 text-[11px] font-semibold text-cop-green">
+                      PM · Hero Quote
+                    </span>
+                  )}
                   <h3 className="mt-1.5 font-display text-[15.5px] font-semibold text-cop-navy">{item.name}</h3>
                   <p className="text-[13px] text-cop-ink/55">{item.role}</p>
                   <p className="mt-1.5 max-w-[640px] text-[13.5px] leading-relaxed text-cop-ink/70">
@@ -145,8 +227,17 @@ export default function LeadersClient() {
               </div>
             </div>
           ))}
-        {!loading && items.length === 0 && <p className="text-[14px] text-cop-ink/50">No leaders yet.</p>}
+        {!loading && items.length === 0 && (
+          <EmptyState
+            icon={User}
+            message={search || tag || color ? "No leaders match your search/filter." : "No leaders yet."}
+          />
+        )}
       </div>
+
+      {!loading && (
+        <Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} limit={meta.limit} onPageChange={handlePageChange} />
+      )}
 
       {editing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -235,6 +326,22 @@ export default function LeadersClient() {
                   </select>
                 </label>
               </div>
+              <label className="block">
+                <span className="text-[13px] font-medium text-cop-ink/60">Display As</span>
+                <select
+                  value={editing.displayAs ?? "leader"}
+                  onChange={(e) => setEditing({ ...editing, displayAs: e.target.value as LeaderDisplayAs })}
+                  className="mt-1 w-full rounded-lg border border-cop-blue-soft/60 px-3 py-2 text-[14px] focus:border-cop-green focus:outline-none"
+                >
+                  <option value="leader">Leader — shown in the "COP32 Leaders" carousel</option>
+                  <option value="pm">PM — shown in the homepage hero Leader Quote section</option>
+                </select>
+                {editing.displayAs === "pm" && (
+                  <p className="mt-1 text-[12px] text-cop-ink/50">
+                    Only one leader should be set to PM at a time — it replaces the hero quote on the homepage.
+                  </p>
+                )}
+              </label>
               <label className="block">
                 <span className="text-[13px] font-medium text-cop-ink/60">Name / Title</span>
                 <input

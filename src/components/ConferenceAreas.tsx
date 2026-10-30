@@ -1,44 +1,45 @@
 "use client";
 
-import { useState } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Briefcase,
-  Building2,
-  CircleCheck,
-  Globe2,
-  GraduationCap,
-  Landmark,
-  Megaphone,
-  Rocket,
-  Users,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Building2, CircleCheck, type LucideIcon } from "lucide-react";
 import Reveal from "@/components/Reveal";
+import { assetUrl, getConferenceZones, getSiteAsset, type ZoneTone } from "@/lib/api";
+import { iconMap } from "@/lib/iconMap";
 
-const zones = [
+export const CONFERENCE_AREAS_ILLUSTRATION_KEY = "conference-areas-illustration";
+
+type RenderZone = {
+  name: string;
+  tone: ZoneTone;
+  description: string;
+  note: string;
+  items: { icon: LucideIcon; text: string }[];
+};
+
+// Shown until the backend responds (or if it's unreachable) so the section never renders empty.
+const FALLBACK_ZONES: RenderZone[] = [
   {
     name: "Blue Zone",
-    tone: "navy" as const,
+    tone: "navy",
     description: "The UN-managed official negotiation area, under the authority of the UNFCCC.",
     note: "The Blue Zone is where formal negotiations take place and global climate policy is shaped.",
     items: [
-      { icon: Landmark, text: "Heads of State and Ministers" },
-      { icon: Globe2, text: "National delegations" },
-      { icon: Users, text: "Accredited observers" },
-      { icon: Building2, text: "International organizations" },
+      { icon: iconMap.Landmark, text: "Heads of State and Ministers" },
+      { icon: iconMap.Globe2, text: "National delegations" },
+      { icon: iconMap.Users, text: "Accredited observers" },
+      { icon: iconMap.Building2, text: "International organizations" },
     ],
   },
   {
     name: "Green Zone",
-    tone: "green" as const,
+    tone: "green",
     description: "Coordinated by Ethiopia as host country, and open to the wider public.",
     note: "The Green Zone is the public heart of COP32, open to everyone building the climate movement.",
     items: [
-      { icon: Briefcase, text: "Private sector" },
-      { icon: GraduationCap, text: "Academia" },
-      { icon: Megaphone, text: "Civil society" },
-      { icon: Rocket, text: "Youth representatives and startups" },
+      { icon: iconMap.Briefcase, text: "Private sector" },
+      { icon: iconMap.GraduationCap, text: "Academia" },
+      { icon: iconMap.Megaphone, text: "Civil society" },
+      { icon: iconMap.Rocket, text: "Youth representatives and startups" },
     ],
   },
 ];
@@ -74,6 +75,28 @@ function ZoneMap() {
 
 export default function ConferenceAreas() {
   const [open, setOpen] = useState<number | null>(null);
+  const [illustration, setIllustration] = useState<string | null>(null);
+  const [zones, setZones] = useState<RenderZone[]>(FALLBACK_ZONES);
+
+  useEffect(() => {
+    getSiteAsset(CONFERENCE_AREAS_ILLUSTRATION_KEY)
+      .then((asset) => setIllustration(asset?.url ?? null))
+      .catch(() => setIllustration(null));
+  }, []);
+
+  useEffect(() => {
+    getConferenceZones()
+      .then((data) => {
+        if (data.length === 0) return;
+        setZones(
+          data.map((zone) => ({
+            ...zone,
+            items: zone.items.map((item) => ({ icon: iconMap[item.icon] ?? Building2, text: item.text })),
+          })),
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <section className="mx-auto w-full max-w-[1320px] px-5 py-20 lg:px-8 lg:py-28">
@@ -147,13 +170,17 @@ export default function ConferenceAreas() {
           })}
 
           <div
-            className={`hidden items-center justify-center rounded-3xl border border-cop-blue-soft/50 bg-cop-mist transition-all duration-500 ease-out md:flex ${
-              open !== null ? "flex-[0] p-0 opacity-0" : "flex-[3] p-6 opacity-100"
-            }`}
+            className={`hidden items-center justify-center overflow-hidden rounded-3xl transition-all duration-500 ease-out md:flex ${
+              illustration ? "" : "border border-cop-blue-soft/50 bg-cop-mist"
+            } ${open !== null ? "flex-[0] p-0 opacity-0" : illustration ? "flex-[3] opacity-100" : "flex-[3] p-6 opacity-100"}`}
           >
-            <div className="h-full w-full max-w-[420px]">
-              <ZoneMap />
-            </div>
+            {illustration ? (
+              <img src={assetUrl(illustration)} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full max-w-[420px]">
+                <ZoneMap />
+              </div>
+            )}
           </div>
         </div>
       </Reveal>

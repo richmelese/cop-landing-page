@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:3001/api";
 const ASSET_ORIGIN = API_URL.replace(/\/api\/?$/, "");
 const TOKEN_KEY = "cop_admin_token";
 
@@ -94,6 +94,39 @@ async function request<T>(path: string, options: RequestInit = {}, auth = false)
   return unwrap<T>(res, `Request failed with status ${res.status}`);
 }
 
+export type PageMeta = { page: number; limit: number; total: number; totalPages: number };
+export type Paginated<T> = { items: T[]; meta: PageMeta };
+
+const emptyMeta = (limit: number, total: number): PageMeta => ({ page: 1, limit, total, totalPages: 1 });
+
+// Same request/response handling as `request`, but also surfaces the backend's
+// pagination meta instead of discarding it — for admin list views that need page controls.
+async function requestPaginated<T>(path: string, options: RequestInit = {}, auth = false): Promise<Paginated<T>> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+  if (auth) {
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...options, headers });
+  const body = await res.json().catch(() => undefined);
+
+  if (!res.ok) {
+    throw new ApiError(res.status, body ? errorMessageFrom(body, res.status) : `Request failed with status ${res.status}`);
+  }
+
+  const envelope = body as ApiEnvelope<T[]> | undefined;
+  if (envelope && typeof envelope === "object" && "success" in envelope && envelope.success) {
+    const items = Array.isArray(envelope.data) ? envelope.data : [];
+    return { items, meta: envelope.meta ?? emptyMeta(items.length, items.length) };
+  }
+  const items = Array.isArray(body) ? (body as T[]) : [];
+  return { items, meta: emptyMeta(items.length, items.length) };
+}
+
 // --- Uploads ---
 export async function uploadFile(file: File): Promise<{ url: string }> {
   const form = new FormData();
@@ -142,17 +175,19 @@ export function getDashboardStats() {
     pages: number;
     news: number;
     faq: number;
-    sponsorSlots: number;
-    sponsorTiers: number;
     leaders: number;
   }>("/dashboard/stats");
 }
 
 // --- Pages ---
+export type PageRow = { slug: string; title: string; sectionLabel: string; sections: unknown[] };
+
 export function getPages(query?: PaginationQuery & { sectionLabel?: string }) {
-  return request<Array<{ slug: string; title: string; sectionLabel: string; sections: unknown[] }>>(
-    `/pages${buildQuery(query)}`,
-  );
+  return request<PageRow[]>(`/pages${buildQuery(query)}`);
+}
+
+export function getPagesPaged(query?: PaginationQuery & { sectionLabel?: string }) {
+  return requestPaginated<PageRow>(`/pages${buildQuery(query)}`);
 }
 
 export function getPage(slug: string) {
@@ -174,6 +209,10 @@ export function getNews(query?: PaginationQuery & { category?: string }) {
   return request<NewsPost[]>(`/news${buildQuery(query)}`);
 }
 
+export function getNewsPaged(query?: PaginationQuery & { category?: string }) {
+  return requestPaginated<NewsPost>(`/news${buildQuery(query)}`);
+}
+
 export function createNews(data: Omit<NewsPost, "id" | "order">) {
   return request<NewsPost>("/news", { method: "POST", body: JSON.stringify(data) }, true);
 }
@@ -186,47 +225,15 @@ export function deleteNews(id: string) {
   return request<void>(`/news/${id}`, { method: "DELETE" }, true);
 }
 
-// --- Sponsors ---
-export type SponsorSlot = { id: string; category: string; status: string; order: number; tierId: string };
-export type SponsorTier = { id: string; name: string; order: number; slots: SponsorSlot[] };
-
-export function getSponsorTiers(query?: PaginationQuery) {
-  return request<SponsorTier[]>(`/sponsors/tiers${buildQuery(query)}`);
-}
-
-export function createSponsorTier(name: string) {
-  return request<SponsorTier>("/sponsors/tiers", { method: "POST", body: JSON.stringify({ name }) }, true);
-}
-
-export function updateSponsorTier(id: string, data: { name?: string; order?: number }) {
-  return request<SponsorTier>(`/sponsors/tiers/${id}`, { method: "PATCH", body: JSON.stringify(data) }, true);
-}
-
-export function deleteSponsorTier(id: string) {
-  return request<void>(`/sponsors/tiers/${id}`, { method: "DELETE" }, true);
-}
-
-export function createSponsorSlot(tierId: string, category: string) {
-  return request<SponsorSlot>(
-    `/sponsors/tiers/${tierId}/slots`,
-    { method: "POST", body: JSON.stringify({ category }) },
-    true,
-  );
-}
-
-export function updateSponsorSlot(id: string, data: { category?: string; status?: string }) {
-  return request<SponsorSlot>(`/sponsors/tiers/slots/${id}`, { method: "PATCH", body: JSON.stringify(data) }, true);
-}
-
-export function deleteSponsorSlot(id: string) {
-  return request<void>(`/sponsors/tiers/slots/${id}`, { method: "DELETE" }, true);
-}
-
 // --- FAQ ---
 export type FaqEntry = { id: string; question: string; answer: string; order: number };
 
 export function getFaq(query?: PaginationQuery) {
   return request<FaqEntry[]>(`/faq${buildQuery(query)}`);
+}
+
+export function getFaqPaged(query?: PaginationQuery) {
+  return requestPaginated<FaqEntry>(`/faq${buildQuery(query)}`);
 }
 
 export function createFaq(data: { question: string; answer: string }) {
@@ -243,6 +250,9 @@ export function deleteFaq(id: string) {
 
 // --- Leaders ---
 export type LeaderColor = "navy" | "green" | "blue";
+// "pm" = featured in the homepage hero Leader Quote section; "leader" = shown only
+// in the "COP32 Leaders" carousel. At most one leader should be "pm" at a time.
+export type LeaderDisplayAs = "leader" | "pm";
 export type Leader = {
   id: string;
   tag: string;
@@ -251,11 +261,20 @@ export type Leader = {
   quote: string;
   image?: string | null;
   color: LeaderColor;
+  displayAs: LeaderDisplayAs;
   order: number;
 };
 
-export function getLeaders(query?: PaginationQuery & { tag?: string; color?: LeaderColor }) {
+export function getLeaders(
+  query?: PaginationQuery & { tag?: string; color?: LeaderColor; displayAs?: LeaderDisplayAs },
+) {
   return request<Leader[]>(`/leaders${buildQuery(query)}`);
+}
+
+export function getLeadersPaged(
+  query?: PaginationQuery & { tag?: string; color?: LeaderColor; displayAs?: LeaderDisplayAs },
+) {
+  return requestPaginated<Leader>(`/leaders${buildQuery(query)}`);
 }
 
 export function createLeader(data: {
@@ -264,6 +283,7 @@ export function createLeader(data: {
   role: string;
   quote: string;
   color: LeaderColor;
+  displayAs?: LeaderDisplayAs;
   image?: string;
 }) {
   return request<Leader>("/leaders", { method: "POST", body: JSON.stringify(data) }, true);
@@ -275,4 +295,40 @@ export function updateLeader(id: string, data: Partial<Omit<Leader, "id" | "orde
 
 export function deleteLeader(id: string) {
   return request<void>(`/leaders/${id}`, { method: "DELETE" }, true);
+}
+
+// --- Site assets (admin-replaceable images on otherwise-static sections) ---
+export type SiteAsset = { key: string; url: string };
+
+export function getSiteAsset(key: string) {
+  return request<SiteAsset | null>(`/site-assets/${key}`);
+}
+
+export function setSiteAsset(key: string, url: string) {
+  return request<SiteAsset>(`/site-assets/${key}`, { method: "PUT", body: JSON.stringify({ url }) }, true);
+}
+
+export function deleteSiteAsset(key: string) {
+  return request<void>(`/site-assets/${key}`, { method: "DELETE" }, true);
+}
+
+// --- Conference zones (homepage "COP32 Areas" Blue Zone / Green Zone cards) ---
+export type ZoneTone = "navy" | "green";
+export type ZoneItem = { icon: string; text: string };
+export type ConferenceZone = {
+  key: string;
+  name: string;
+  tone: ZoneTone;
+  description: string;
+  note: string;
+  items: ZoneItem[];
+  order: number;
+};
+
+export function getConferenceZones() {
+  return request<ConferenceZone[]>("/conference-zones");
+}
+
+export function updateConferenceZone(key: string, data: Partial<Omit<ConferenceZone, "key" | "order">>) {
+  return request<ConferenceZone>(`/conference-zones/${key}`, { method: "PATCH", body: JSON.stringify(data) }, true);
 }
