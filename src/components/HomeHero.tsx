@@ -9,6 +9,7 @@ import addisSunset from "../../public/images/addis-sunset.jpg";
 import addisView from "../../public/images/addis-view.jpg";
 import qrCode from "../../public/images/superapp-qr.png";
 import AdeyAbebaStrip from "./AdeyAbebaStrip";
+import CountdownTimer from "./CountdownTimer";
 
 const slides = [
   {
@@ -40,7 +41,7 @@ export default function HomeHero() {
 
   return (
     <section className="relative">
-      <div className="relative h-[560px] w-full overflow-hidden bg-cop-navy-dark md:h-[640px]">
+      <div className="relative h-[680px] w-full overflow-hidden bg-cop-navy-dark md:h-[760px]">
         {slides.map((slide, i) => (
           <Image
             key={slide.alt}
@@ -57,7 +58,7 @@ export default function HomeHero() {
         ))}
         <div className="absolute inset-0 bg-gradient-to-t from-cop-navy-dark/80 via-cop-navy-dark/30 to-cop-navy-dark/40" />
 
-        <div className="relative mx-auto flex h-full max-w-[720px] flex-col items-center justify-center px-6 text-center">
+        <div className="relative mx-auto flex h-full max-w-[720px] flex-col items-center justify-center px-6 pt-24 text-center md:pt-28">
           {slides.map((slide, i) => (
             <h1
               key={slide.alt}
@@ -78,7 +79,11 @@ export default function HomeHero() {
             COP32, the 32nd UN Climate Change Conference, hosted by Ethiopia in Addis Ababa — 2027.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <div className="mt-7">
+            <CountdownTimer />
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#"
               className="group relative inline-flex items-center gap-4 overflow-hidden rounded-2xl bg-cop-green py-2.5 pr-6 pl-2.5 shadow-[0_15px_40px_-10px_rgba(67,185,125,0.8)] transition-all duration-300 hover:-translate-y-1"

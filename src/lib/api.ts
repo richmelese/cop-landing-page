@@ -213,6 +213,10 @@ export function getNewsPaged(query?: PaginationQuery & { category?: string }) {
   return requestPaginated<NewsPost>(`/news${buildQuery(query)}`);
 }
 
+export function getNewsPost(id: string) {
+  return request<NewsPost>(`/news/${id}`);
+}
+
 export function createNews(data: Omit<NewsPost, "id" | "order">) {
   return request<NewsPost>("/news", { method: "POST", body: JSON.stringify(data) }, true);
 }
