@@ -8,6 +8,7 @@ import {
   HelpCircle,
   LayoutDashboard,
   LogOut,
+  MapPinned,
   Newspaper,
   Globe2,
   Users,
@@ -21,6 +22,7 @@ const nav = [
   { label: "News", href: "/admin/news", icon: Newspaper },
   { label: "FAQ", href: "/admin/faq", icon: HelpCircle },
   { label: "Leaders", href: "/admin/leaders", icon: Users },
+  { label: "Conference Areas", href: "/admin/conference-areas", icon: MapPinned },
 ];
 
 const EMAIL_CACHE_KEY = "cop_admin_email";
