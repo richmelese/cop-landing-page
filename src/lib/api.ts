@@ -1,5 +1,11 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:3001/api";
-const ASSET_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+const PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:3001/api";
+// Server-side code (build-time generateStaticParams, SSR) can hit the backend over the
+// Docker network by container name instead of the public IP — avoids hairpin-NAT issues
+// where a server can't reach its own public IP from inside itself. Browsers always need
+// PUBLIC_API_URL since they can't resolve the internal container hostname.
+const API_URL =
+  typeof window === "undefined" ? (process.env.API_INTERNAL_URL ?? PUBLIC_API_URL) : PUBLIC_API_URL;
+const ASSET_ORIGIN = PUBLIC_API_URL.replace(/\/api\/?$/, "");
 const TOKEN_KEY = "cop_admin_token";
 
 /**
