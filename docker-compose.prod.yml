@@ -1,30 +1,13 @@
-# Production stack for the VPS. Served directly on port 7005 — no domain, no reverse proxy.
+# Production stack for the VPS. Served directly on port 3005 — no domain, no reverse proxy.
 # NEXT_PUBLIC_API_URL is baked in at build time (see Dockerfile) from the .env file below.
-# API_INTERNAL_URL lets build-time/SSR fetches reach the backend over the shared Docker
-# network by container name (cop-landing-backend) instead of the public IP, avoiding
-# hairpin-NAT issues where the server can't reach its own public IP from inside itself.
-# This requires the backend stack (cop-landing-backend repo) to already be deployed —
-# it owns the "cop-backend_default" network joined below.
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-      network: cop-backend_default
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        API_INTERNAL_URL: ${API_INTERNAL_URL}
     container_name: cop-landing-frontend
     restart: unless-stopped
-    environment:
-      API_INTERNAL_URL: ${API_INTERNAL_URL}
     ports:
       - "7005:3005"
-    networks:
-      - default
-      - backend_net
-
-networks:
-  backend_net:
-    external: true
-    name: cop-backend_default
