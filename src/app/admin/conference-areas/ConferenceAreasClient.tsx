@@ -118,7 +118,7 @@ export default function ConferenceAreasClient() {
         </span>
         <div>
           <h1 className="font-display text-[22px] font-bold text-cop-navy">Conference Areas</h1>
-          <p className="text-[13px] text-cop-ink/60">The "COP32 Areas" section on the homepage (Blue Zone / Green Zone).</p>
+          <p className="text-[13px] text-cop-ink/60">The &quot;COP32 Areas&quot; section on the homepage (Blue Zone / Green Zone).</p>
         </div>
       </div>
 

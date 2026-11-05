@@ -333,7 +333,7 @@ export default function LeadersClient() {
                   onChange={(e) => setEditing({ ...editing, displayAs: e.target.value as LeaderDisplayAs })}
                   className="mt-1 w-full rounded-lg border border-cop-blue-soft/60 px-3 py-2 text-[14px] focus:border-cop-green focus:outline-none"
                 >
-                  <option value="leader">Leader — shown in the "COP32 Leaders" carousel</option>
+                  <option value="leader">Leader — shown in the &quot;COP32 Leaders&quot; carousel</option>
                   <option value="pm">PM — shown in the homepage hero Leader Quote section</option>
                 </select>
                 {editing.displayAs === "pm" && (

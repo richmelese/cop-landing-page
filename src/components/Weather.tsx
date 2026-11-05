@@ -88,6 +88,7 @@ export default function Weather() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional fetch-on-mount, then poll
     load();
     const refresh = setInterval(load, REFRESH_MS);
     const onVisible = () => document.visibilityState === "visible" && load();
@@ -99,6 +100,7 @@ export default function Weather() {
   }, [load]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client clock; new Date() can't be baked into the prerender
     setNow(new Date());
     const tick = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(tick);

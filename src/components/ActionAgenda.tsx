@@ -46,7 +46,8 @@ function wrap(i: number, length: number) {
 export default function ActionAgenda() {
   const [active, setActive] = useState(0);
   const [dragX, setDragX] = useState(0);
-  const dragState = useRef<{ startX: number; dragging: boolean; moved: boolean } | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const dragState = useRef<{ startX: number; moved: boolean } | null>(null);
   const n = themes.length;
 
   const slots = [];
@@ -55,12 +56,13 @@ export default function ActionAgenda() {
   }
 
   const onPointerDown = (e: React.PointerEvent) => {
-    dragState.current = { startX: e.clientX, dragging: true, moved: false };
+    dragState.current = { startX: e.clientX, moved: false };
+    setDragging(true);
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragState.current?.dragging) return;
+    if (!dragState.current) return;
     const delta = e.clientX - dragState.current.startX;
     if (Math.abs(delta) > 4) dragState.current.moved = true;
     setDragX(delta);
@@ -72,6 +74,7 @@ export default function ActionAgenda() {
     if (dragX > threshold) setActive((i) => wrap(i - 1, n));
     else if (dragX < -threshold) setActive((i) => wrap(i + 1, n));
     dragState.current = null;
+    setDragging(false);
     setDragX(0);
   };
 
@@ -97,7 +100,7 @@ export default function ActionAgenda() {
 
         <div
           className="relative mt-10 h-[370px] touch-pan-y overflow-hidden select-none md:h-[390px]"
-          style={{ perspective: "1600px", cursor: dragState.current?.dragging ? "grabbing" : "grab" }}
+          style={{ perspective: "1600px", cursor: dragging ? "grabbing" : "grab" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
@@ -128,7 +131,7 @@ export default function ActionAgenda() {
                   transform: `translate(-50%, -50%) translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
                   opacity,
                   zIndex: z,
-                  transition: dragState.current?.dragging ? "none" : undefined,
+                  transition: dragging ? "none" : undefined,
                 }}
                 className="group absolute top-1/2 left-1/2 flex aspect-[3/4] w-[260px] flex-col justify-end overflow-hidden rounded-3xl shadow-2xl shadow-cop-navy-dark/30 ring-4 ring-white transition-all duration-500 ease-out"
               >

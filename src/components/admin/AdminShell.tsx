@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FileText,
   HelpCircle,
@@ -32,19 +32,15 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const router = useRouter();
   const isLoginPage = pathname === "/admin/login";
 
-  const [authorized, setAuthorized] = useState(isLoginPage);
-  const [email, setEmail] = useState("");
-
-  useLayoutEffect(() => {
-    if (isLoginPage) return;
-    if (getToken()) setAuthorized(true);
+  const [authorized, setAuthorized] = useState(() => isLoginPage || !!getToken());
+  const [email, setEmail] = useState(() => {
     try {
-      const cached = window.localStorage.getItem(EMAIL_CACHE_KEY);
-      if (cached) setEmail(cached);
+      return window.localStorage.getItem(EMAIL_CACHE_KEY) ?? "";
     } catch {
       // ignore — purely a perf cache, safe to skip in private browsing
+      return "";
     }
-  }, [isLoginPage]);
+  });
 
   useEffect(() => {
     if (isLoginPage) return;

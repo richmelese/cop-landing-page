@@ -60,7 +60,6 @@ export default function HostCity() {
         <p className="mt-2 font-display text-7xl font-extrabold tracking-tight text-white md:text-8xl">
           Addis Ababa
         </p>
-        "
 
         <div className="mt-16 grid gap-x-7 gap-y-14 sm:grid-cols-3">
           {cards.map(({ image, icon: Icon, title, subtitle, body, cta, href }, i) => (

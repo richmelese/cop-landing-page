@@ -7,12 +7,13 @@ import { useEffect, useState } from "react";
 // a placeholder for that window; update it once the Presidency confirms exact dates.
 const TARGET_DATE = new Date("2027-11-01T00:00:00Z");
 
-type TimeLeft = { days: number; hours: number; minutes: number; seconds: number };
+type TimeLeft = { days: number; hours: number; minutes: number; seconds: number; isPast: boolean };
 
 function getTimeLeft(): TimeLeft {
-  const diff = Math.max(0, TARGET_DATE.getTime() - Date.now());
-  const seconds = Math.floor(diff / 1000);
+  const rawDiff = TARGET_DATE.getTime() - Date.now();
+  const seconds = Math.floor(Math.max(0, rawDiff) / 1000);
   return {
+    isPast: rawDiff <= 0,
     days: Math.floor(seconds / 86400),
     hours: Math.floor((seconds % 86400) / 3600),
     minutes: Math.floor((seconds % 3600) / 60),
@@ -35,6 +36,7 @@ export default function CountdownTimer() {
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only; avoids an SSR/client clock hydration mismatch
     setTimeLeft(getTimeLeft());
     const id = setInterval(() => setTimeLeft(getTimeLeft()), 1000);
     return () => clearInterval(id);
@@ -42,7 +44,7 @@ export default function CountdownTimer() {
 
   if (!timeLeft) return null;
 
-  const isPast = TARGET_DATE.getTime() <= Date.now();
+  const { isPast } = timeLeft;
 
   return (
     <div className="px-7 py-4">

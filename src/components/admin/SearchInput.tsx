@@ -17,8 +17,11 @@ export default function SearchInput({
   // Typed characters update `draft` immediately for a responsive field; the parent's
   // (network-triggering) onChange only fires after the user pauses typing.
   const [draft, setDraft] = useState(value);
-
-  useEffect(() => setDraft(value), [value]);
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setDraft(value);
+  }
 
   useEffect(() => {
     if (draft === value) return;
