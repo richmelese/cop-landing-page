@@ -1,0 +1,13 @@
+# Production stack for the VPS. Served directly on port 3005 — no domain, no reverse proxy.
+# NEXT_PUBLIC_API_URL is baked in at build time (see Dockerfile) from the .env file below.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    container_name: cop-landing-frontend
+    restart: unless-stopped
+    ports:
+      - "7005:3005"

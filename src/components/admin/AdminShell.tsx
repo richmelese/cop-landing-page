@@ -29,10 +29,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const router = useRouter();
   const isLoginPage = pathname === "/admin/login";
-  // Server render always has no access to localStorage, so the initial state must match
-  // that (false/"") to avoid a hydration mismatch — then a layout effect (client-only,
-  // runs before paint) flips it from the cached token/email synchronously, so logged-in
-  // users never see a blocking "checking session" screen or a flash of the wrong state.
+
   const [authorized, setAuthorized] = useState(isLoginPage);
   const [email, setEmail] = useState("");
 

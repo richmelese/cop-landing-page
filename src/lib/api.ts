@@ -90,7 +90,12 @@ async function request<T>(path: string, options: RequestInit = {}, auth = false)
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...options, headers });
+  const res = await fetch(`${API_URL}${path}`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(10_000),
+    ...options,
+    headers,
+  });
   return unwrap<T>(res, `Request failed with status ${res.status}`);
 }
 
@@ -111,7 +116,12 @@ async function requestPaginated<T>(path: string, options: RequestInit = {}, auth
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${path}`, { cache: "no-store", ...options, headers });
+  const res = await fetch(`${API_URL}${path}`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(10_000),
+    ...options,
+    headers,
+  });
   const body = await res.json().catch(() => undefined);
 
   if (!res.ok) {
